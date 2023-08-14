@@ -20,8 +20,9 @@ class AnimeArticle(
     val synopsis: String,
     val description: String,
     val startDate: String,
-    val endDate: String,
-    val posterImage: AnimePoster
+    val endDate: String?,
+    val posterImage: AnimePoster,
+    val coverImage: AnimePoster
 )
 
 class AnimePoster(

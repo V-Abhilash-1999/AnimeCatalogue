@@ -1,6 +1,7 @@
 package com.abhilash.apps.animecatalogue.model
 
 import com.google.gson.GsonBuilder
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -20,12 +21,20 @@ class AnimeRepository {
                 .create(gson)
         )
         .build()
+    private val animeApi = retrofit.create(AnimeAPI::class.java)
 
     suspend fun fetchAnime(): APIData? {
-        val animeApi = retrofit.create(AnimeAPI::class.java)
-        val response = animeApi.getData()
-        if(response.isSuccessful) {
-            return response.body()
+        return animeApi.getData().getSuccessfulDataOrNull()
+    }
+
+    suspend fun fetchAnimeWidthId(id:String): AnimeArticle? {
+        return animeApi.getDateWithId(id).getSuccessfulDataOrNull()?.data?.firstOrNull()?.attributes
+    }
+
+
+    private fun <T> Response<T>.getSuccessfulDataOrNull(): T? {
+        if(isSuccessful) {
+            return body()
         }
         return null
     }

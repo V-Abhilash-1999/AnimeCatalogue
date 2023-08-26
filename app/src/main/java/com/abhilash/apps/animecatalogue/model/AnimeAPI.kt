@@ -14,5 +14,8 @@ interface AnimeAPI {
 
 
     @GET("anime/")
-    suspend fun getDateWithId(@Query("filter[id]") id: String): Response<APIData>
+    suspend fun getDataWithId(@Query("filter[id]") id: String): Response<APIData>
+
+    @GET("anime/?include=categories")
+    suspend fun getDataWithCategory(@Query("filter[categories]") category: String, @Query("&sort") sortBy: String = "-userCount"): Response<APIData>
 }

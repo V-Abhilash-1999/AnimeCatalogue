@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="800dp"
+    android:height="800dp"
+    android:viewportWidth="800"
+    android:viewportHeight="800">
+
+    <path
+        android:fillColor="#ffa500"
+        android:pathData="M400 100 q50 100 100 0 t100 0 q50 -100 100 0 t100 0 q-50 100 -100 0 t-100 0 q-50 100 -100 0 t-100 0 q-50 -100 -100 0 t-100 0 q50 100 100 0 t100 0 q-50 -100 -100 0 t-100 0 q50 -100 100 0 t100 0" />
+    <path
+        android:fillColor="#ff0000"
+        android:pathData="M300 200 q100 100 200 0 t200 0 q100 100 200 0 t200 0 q-100 -100 -200 0 t-200 0 q-100 -100 -200 0 t-200 0 q100 100 200 0 t200 0 q-100 -100 -200 0 t-200 0 q100 100 200 0 t200 0" />
+    <path
+        android:fillColor="#ffff00"
+        android:pathData="M400 300 q100 200 200 0 t200 0 q-100 -200 -200 0 t-200 0 q100 200 200 0 t200 0 q-100 -200 -200 0 t-200 0 q100 -200 200 0 t200 0" />
+</vector>

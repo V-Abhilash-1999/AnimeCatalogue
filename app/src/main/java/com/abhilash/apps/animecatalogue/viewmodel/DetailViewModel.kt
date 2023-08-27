@@ -3,26 +3,19 @@ package com.abhilash.apps.animecatalogue.viewmodel
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.abhilash.apps.animecatalogue.model.AnimeArticle
-import com.abhilash.apps.animecatalogue.model.AnimeRepository
-import com.abhilash.apps.animecatalogue.model.CategoryAttribute
+import com.abhilash.apps.animecatalogue.model.AnimeData
+import com.abhilash.apps.animecatalogue.model.Repository
 
 class DetailViewModel: ViewModel() {
-    private val repository = AnimeRepository()
-    val animeArticle = mutableStateOf<AnimeArticle?>(null)
+    private val repository = Repository.instance()
+    val animeData = mutableStateOf<AnimeData?>(null)
 
-    val categoryAttributeList = mutableStateListOf<CategoryAttribute>()
+    val categoryAttributeList = mutableStateListOf<String>()
 
     suspend fun getAnimeData(id: String) {
-        repository.fetchAnimeWidthId(id)?.let {
-            animeArticle.value = it.attributes
-            getCategories(it.relationships.categories.links.self)
-        }
-    }
-
-    private suspend fun getCategories(link: String) {
-        repository.fetchCategory(link = link) {
-            categoryAttributeList.add(it)
+        repository.fetchAnimeById(id)?.let {
+            animeData.value = it
+            categoryAttributeList.addAll(it.genres.map { it.name })
         }
     }
 }

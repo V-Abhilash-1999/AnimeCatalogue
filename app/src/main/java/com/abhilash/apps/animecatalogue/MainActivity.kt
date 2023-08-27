@@ -27,14 +27,6 @@ import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.statusBarColor = Color.WHITE
-            window.isStatusBarContrastEnforced = false
-        }
         setContent {
             AnimeCatalogueTheme {
                 AnimeCatalogueNavigator()
@@ -51,7 +43,7 @@ fun AnimeCatalogueNavigator() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Screen.HOME.name //"${Screen.DETAIL.name}/44081"
+            startDestination = Screen.HOME.name
         ) {
             composable(Screen.HOME.name) {
                 HomeScreen()

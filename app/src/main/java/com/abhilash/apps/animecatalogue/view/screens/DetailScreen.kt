@@ -1,12 +1,11 @@
 package com.abhilash.apps.animecatalogue.view.screens
 
-import android.nfc.Tag
-import android.util.EventLogTags.Description
-import android.util.Log
-import androidx.compose.animation.animateContentSize
+import android.content.Intent
+import android.net.Uri
+import android.webkit.JavascriptInterface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,10 +22,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,34 +36,36 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColorLong
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abhilash.apps.animecatalogue.R
-import com.abhilash.apps.animecatalogue.model.AnimeArticle
-import com.abhilash.apps.animecatalogue.model.CategoryAttribute
+import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.util.AnimePoster
 import com.abhilash.apps.animecatalogue.view.util.HorizontalSpacer
 import com.abhilash.apps.animecatalogue.view.util.LoadingScreen
 import com.abhilash.apps.animecatalogue.view.util.RatingText
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.view.util.capitalizeFirstLetter
+import com.abhilash.apps.animecatalogue.view.util.drawBottomShade
 import com.abhilash.apps.animecatalogue.view.util.takeIfNonZero
 import com.abhilash.apps.animecatalogue.viewmodel.DetailViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.AttributedCharacterIterator.Attribute
-import java.util.Locale
+
 
 @Composable
 fun AnimeDetailScreen(
@@ -72,7 +73,7 @@ fun AnimeDetailScreen(
 ) {
     val detailViewModel = viewModel<DetailViewModel>()
 
-    val animeArticle by detailViewModel.animeArticle
+    val animeArticle by detailViewModel.animeData
     val animeCategoryAttributeList = detailViewModel.categoryAttributeList
 
     LaunchedEffect(key1 = Unit) {
@@ -89,7 +90,7 @@ fun AnimeDetailScreen(
         else -> {
             animeArticle?.let {
                 AnimeDetail(
-                    animeArticle = it,
+                    animeData = it,
                     categoryAttribute = animeCategoryAttributeList
                 )
             }
@@ -99,39 +100,97 @@ fun AnimeDetailScreen(
 
 @Composable
 private fun AnimeDetail(
-    animeArticle: AnimeArticle,
-    categoryAttribute: SnapshotStateList<CategoryAttribute>
+    animeData: AnimeData,
+    categoryAttribute: SnapshotStateList<String>
 ) {
     BackdropImageScaffold(
         modifier = Modifier
             .fillMaxSize(),
-        backgroundImageUrl = animeArticle.posterImage.largeImageUrl,
+        backgroundImageUrl = animeData.images.jpg.largeImageUrl,
         contentPaddingValues = PaddingValues(top = 24.dp, start = 16.dp, end = 16.dp),
         contentBackgroundColor = Color.White
     ) {
         TitleRow(
-            title = animeArticle.canonicalTitle,
-            rating = animeArticle.averageRating
+            title = animeData.title,
+            rating = animeData.score
         )
 
         VerticalSpacer(16.dp)
 
-        AnimeTags(tags = categoryAttribute.map { it.title })
+        AnimeTags(
+            tags = categoryAttribute
+        )
 
         VerticalSpacer(16.dp)
 
         Attribute(
-            length = animeArticle.episodeLength.takeIfNonZero() ?: animeArticle.totalLength,
-            rating = animeArticle.ageRating,
-            status = animeArticle.status
+            length = animeData.episodes,
+            rating = animeData.rating,
+            status = animeData.runningStatus
         )
 
         VerticalSpacer(24.dp)
 
         Description(
-            description = animeArticle.description
+            description = animeData.description
         )
 
+        VerticalSpacer(24.dp)
+
+        Trailer(
+            videoId = animeData.trailer.videoId,
+            thumbnailUrl = animeData.trailer.images.largeImageUrl
+        )
+    }
+}
+
+@Composable
+private fun Trailer(
+    videoId: String,
+    thumbnailUrl: String
+) {
+    HeaderText(text = "Trailer")
+
+    VerticalSpacer(8.dp)
+
+    YouTubeView(
+        videoId = videoId,
+        thumbnailUrl = thumbnailUrl
+    )
+}
+
+@Composable
+private fun YouTubeView(
+    videoId: String,
+    thumbnailUrl: String
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
+                intent.putExtra("VIDEO_ID", videoId)
+                startActivity(context, intent, bundleOf())
+            }
+    ) {
+        AnimePoster(
+            modifier = Modifier
+                .fillMaxSize(),
+            url = thumbnailUrl
+        )
+
+        Icon(
+            modifier = Modifier
+                .size(48.dp)
+                .align(Alignment.Center)
+                .background(Color.White, RoundedCornerShape(100)),
+            imageVector = Icons.Filled.PlayArrow,
+            contentDescription = "Play"
+        )
     }
 }
 
@@ -139,12 +198,7 @@ private fun AnimeDetail(
 private fun Description(
     description: String
 ) {
-    Text(
-        text = "Description",
-        fontSize = 16.sp,
-        fontWeight = FontWeight.ExtraBold,
-        color = Color.Black
-    )
+    HeaderText(text = "Description")
 
     VerticalSpacer(8.dp)
 
@@ -157,42 +211,59 @@ private fun Description(
 }
 
 @Composable
+private fun HeaderText(text: String) {
+    Text(
+        text = text,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = Color.Black
+    )
+}
+
+@Composable
 private fun Attribute(
     length: Int,
     rating: String,
     status: String
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxWidth()
     ) {
         length.takeIfNonZero()?.let {
             AttributeItem(
+                modifier = Modifier.weight(2f),
                 topText = "Avg. Length",
                 bottomText = length.toString()
             )
+
+            HorizontalSpacer(width = 32.dp)
         }
 
         AttributeItem(
+            modifier = Modifier.weight(2f),
             topText = "Rating",
             bottomText = rating
         )
 
+        HorizontalSpacer(width = 32.dp)
+
         AttributeItem(
+            modifier = Modifier.weight(2f),
             topText = "Status",
             bottomText = status.capitalizeFirstLetter()
         )
-
-        HorizontalSpacer(width = 32.dp)
     }
 }
 
 @Composable
 private fun AttributeItem(
+    modifier: Modifier = Modifier,
     topText: String,
     bottomText: String
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Text(
             text = topText,
             fontSize = 14.sp,
@@ -206,6 +277,8 @@ private fun AttributeItem(
             text = bottomText,
             fontSize = 14.sp,
             color = Color.Black,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             fontWeight = FontWeight.Medium
         )
     }
@@ -216,10 +289,7 @@ private fun AttributeItem(
 private fun AnimeTags(
     tags: List<String?>
 ) {
-    FlowRow(
-        modifier = Modifier
-            .animateContentSize()
-    ) {
+    FlowRow {
         tags.forEach {
             key(it) {
                 Tag(text = it.toString())
@@ -280,7 +350,7 @@ private fun TitleRow(
 
             RatingText(
                 modifier = Modifier,
-                rating = "${String.format(" % .2f", rating / 10)}/10"
+                rating = "${String.format(" % .2f", rating)}/10"
             )
         }
 
@@ -310,7 +380,8 @@ private fun BackdropImageScaffold(
         AnimePoster(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.4f),
+                .fillMaxHeight(0.4f)
+                .drawBottomShade(),
             url = backgroundImageUrl,
             contentScale = ContentScale.Crop
         )
@@ -323,7 +394,7 @@ private fun BackdropImageScaffold(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = (this@BoxWithConstraints.constraints.maxHeight * .6f).dp)
+                    .defaultMinSize(minHeight = (this@BoxWithConstraints.constraints.maxHeight * .8f).dp)
                     .offset(y = (this@BoxWithConstraints.maxHeight.value * (0.4)).dp - 20.dp)
                     .background(
                         color = contentBackgroundColor,
@@ -334,5 +405,13 @@ private fun BackdropImageScaffold(
                 content()
             }
         }
+    }
+}
+
+
+internal class JSInterface {
+    @JavascriptInterface
+    fun doSomething() {
+
     }
 }

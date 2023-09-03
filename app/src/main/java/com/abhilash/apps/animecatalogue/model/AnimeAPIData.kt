@@ -72,7 +72,7 @@ data class AnimeData(
 
 data class YouTubeTrailer(
     @SerializedName("youtube_id")
-    val videoId: String,
+    val videoId: String?,
 
     @SerializedName("embed_url")
     val embedUrl: String,

@@ -14,14 +14,16 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -48,15 +50,17 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abhilash.apps.animecatalogue.R
 import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.util.AnimePoster
 import com.abhilash.apps.animecatalogue.view.util.HorizontalSpacer
-import com.abhilash.apps.animecatalogue.view.util.LoadingScreen
+import com.abhilash.apps.animecatalogue.view.util.LoaderUrls
+import com.abhilash.apps.animecatalogue.view.util.AnimeLoader
+import com.abhilash.apps.animecatalogue.view.util.ComingSoon
 import com.abhilash.apps.animecatalogue.view.util.RatingText
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.view.util.capitalizeFirstLetter
@@ -66,12 +70,11 @@ import com.abhilash.apps.animecatalogue.viewmodel.DetailViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun AnimeDetailScreen(
     animeId: String
 ) {
-    val detailViewModel = viewModel<DetailViewModel>()
+    val detailViewModel = hiltViewModel<DetailViewModel>()
 
     val animeArticle by detailViewModel.animeData
     val animeCategoryAttributeList = detailViewModel.categoryAttributeList
@@ -84,7 +87,10 @@ fun AnimeDetailScreen(
 
     when(animeArticle) {
         null -> {
-            LoadingScreen()
+            AnimeLoader(
+                modifier = Modifier.fillMaxSize(),
+                loaderGifUrl = LoaderUrls.PIKACHU.url
+            )
         }
 
         else -> {
@@ -135,11 +141,24 @@ private fun AnimeDetail(
             description = animeData.description
         )
 
-        VerticalSpacer(24.dp)
+        animeData.trailer.videoId?.let {
+            Trailer(
+                videoId = animeData.trailer.videoId,
+                thumbnailUrl = animeData.trailer.images.largeImageUrl
+            )
+        }
 
-        Trailer(
-            videoId = animeData.trailer.videoId,
-            thumbnailUrl = animeData.trailer.images.largeImageUrl
+        RelatedAnime()
+    }
+}
+
+@Composable
+fun RelatedAnime() {
+    ContentWithHeader(header = "Related Anime") {
+        ComingSoon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
         )
     }
 }
@@ -149,14 +168,12 @@ private fun Trailer(
     videoId: String,
     thumbnailUrl: String
 ) {
-    HeaderText(text = "Trailer")
-
-    VerticalSpacer(8.dp)
-
-    YouTubeView(
-        videoId = videoId,
-        thumbnailUrl = thumbnailUrl
-    )
+    ContentWithHeader(header = "Trailer") {
+        YouTubeView(
+            videoId = videoId,
+            thumbnailUrl = thumbnailUrl
+        )
+    }
 }
 
 @Composable
@@ -195,19 +212,43 @@ private fun YouTubeView(
 }
 
 @Composable
+private fun RelatedAnimeList() {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        items(0) {
+
+        }
+    }
+}
+
+@Composable
 private fun Description(
     description: String
 ) {
-    HeaderText(text = "Description")
+    ContentWithHeader(header = "Description") {
+        Text(
+            text = description,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Light,
+            color = Color.Gray
+        )
+    }
+}
+
+@Composable
+private fun ContentWithHeader(
+    header: String,
+    content: @Composable () -> Unit
+) {
+    HeaderText(text = header)
 
     VerticalSpacer(8.dp)
 
-    Text(
-        text = description,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Light,
-        color = Color.Gray
-    )
+    content()
+
+    VerticalSpacer(32.dp)
 }
 
 @Composable
@@ -390,11 +431,12 @@ private fun BackdropImageScaffold(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                .heightIn(min = (this@BoxWithConstraints.constraints.maxHeight * .5f).dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = (this@BoxWithConstraints.constraints.maxHeight * .8f).dp)
+                    .wrapContentHeight()
                     .offset(y = (this@BoxWithConstraints.maxHeight.value * (0.4)).dp - 20.dp)
                     .background(
                         color = contentBackgroundColor,
@@ -403,6 +445,8 @@ private fun BackdropImageScaffold(
                     .padding(contentPaddingValues)
             ) {
                 content()
+
+                VerticalSpacer((this@BoxWithConstraints.maxHeight.value * (0.4)).dp - 20.dp)
             }
         }
     }

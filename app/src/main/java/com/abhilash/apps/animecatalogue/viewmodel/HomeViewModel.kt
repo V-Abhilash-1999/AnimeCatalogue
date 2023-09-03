@@ -8,12 +8,17 @@ import com.abhilash.apps.animecatalogue.model.GenreData
 import com.abhilash.apps.animecatalogue.model.Repository
 import com.abhilash.apps.animecatalogue.view.screens.HomeSegment
 import com.abhilash.apps.animecatalogue.view.util.UIState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
-class HomeViewModel: ViewModel() {
-    private val repository = Repository.instance()
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: Repository
+): ViewModel() {
     private val _genreList = mutableListOf<GenreData>()
 
     val genreData: List<GenreData>

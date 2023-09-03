@@ -47,24 +47,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.loader.content.Loader
 import com.abhilash.apps.animecatalogue.Screen
 import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
 import com.abhilash.apps.animecatalogue.view.util.AnimePoster
-import com.abhilash.apps.animecatalogue.view.util.LoadingScreen
+import com.abhilash.apps.animecatalogue.view.util.LoaderUrls
+import com.abhilash.apps.animecatalogue.view.util.AnimeLoader
 import com.abhilash.apps.animecatalogue.view.util.RatingText
 import com.abhilash.apps.animecatalogue.view.util.UIContentType
 import com.abhilash.apps.animecatalogue.view.util.UIState
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.viewmodel.HomeViewModel
+import com.abhilash.apps.animecatalogue.viewmodel.LoginViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
-    val homeViewModel: HomeViewModel = viewModel()
+    val viewModel = hiltViewModel<HomeViewModel>()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -78,7 +82,7 @@ fun HomeScreen() {
             )
         }
     ) {
-        val uiState by homeViewModel.uiState
+        val uiState by viewModel.uiState
 
         CatalogueScreen(
             modifier = Modifier
@@ -105,7 +109,11 @@ private fun CatalogueScreen(
             }
 
             UIState.LOADING -> {
-                LoadingScreen()
+                AnimeLoader(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    loaderGifUrl = LoaderUrls.PIKACHU.url
+                )
             }
 
             UIState.EMPTY_DATA -> {
@@ -180,19 +188,12 @@ private fun AnimeSegmentList(
     ) {
         if(segmentData.dataList.isEmpty()) {
             item {
-                Box(
+                AnimeLoader(
                     modifier = Modifier
                         .fillParentMaxSize()
-                        .height(200.dp)
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(36.dp),
-                        color = Color.Green,
-                        strokeWidth = 2.dp
-                    )
-                }
+                        .height(200.dp),
+                    loaderGifUrl = LoaderUrls.SHARINGAN.url
+                )
             }
         }
         items(

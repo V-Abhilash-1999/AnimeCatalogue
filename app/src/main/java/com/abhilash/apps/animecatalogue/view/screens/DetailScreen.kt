@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abhilash.apps.animecatalogue.R
 import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.util.AnimePoster
@@ -141,12 +140,10 @@ private fun AnimeDetail(
             description = animeData.description
         )
 
-        animeData.trailer.videoId?.let {
-            Trailer(
-                videoId = animeData.trailer.videoId,
-                thumbnailUrl = animeData.trailer.images.largeImageUrl
-            )
-        }
+        Trailer(
+            videoId = animeData.trailer.videoId,
+            thumbnailUrl = animeData.trailer.images.largeImageUrl
+        )
 
         RelatedAnime()
     }
@@ -165,11 +162,12 @@ fun RelatedAnime() {
 
 @Composable
 private fun Trailer(
-    videoId: String,
+    videoId: String?,
     thumbnailUrl: String
 ) {
+    videoId ?: return
     ContentWithHeader(header = "Trailer") {
-        YouTubeView(
+        TrailerPreview(
             videoId = videoId,
             thumbnailUrl = thumbnailUrl
         )
@@ -177,7 +175,7 @@ private fun Trailer(
 }
 
 @Composable
-private fun YouTubeView(
+private fun TrailerPreview(
     videoId: String,
     thumbnailUrl: String
 ) {

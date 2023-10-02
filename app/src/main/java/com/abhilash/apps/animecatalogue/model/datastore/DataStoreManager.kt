@@ -10,7 +10,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,6 +30,12 @@ class DataStoreManager @Inject constructor(context: Context) {
     ) {
         dataStore.edit { pref ->
             pref[loginMethodKey] = loginMode.name
+        }
+    }
+
+    suspend fun clear() {
+        dataStore.edit { pref ->
+            pref.clear()
         }
     }
 

@@ -1,11 +1,9 @@
 package com.abhilash.apps.animecatalogue.view.util
 
 import android.os.Build
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,14 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TabPosition
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -30,18 +27,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import kotlinx.coroutines.delay
+import com.abhilash.apps.animecatalogue.model.datastore.LoginMode
+import com.abhilash.apps.animecatalogue.view.screens.AnimeScreen
+import com.abhilash.apps.animecatalogue.view.state.AuthTokenState
 
 
 fun Modifier.drawBottomShade(
@@ -185,6 +181,47 @@ fun ComingSoon(
 ) {
     AnimePoster(
         modifier = modifier,
-        url = "https://o.remove.bg/downloads/a0b3125e-62fa-45ad-b05f-f8b3e3ce0d6b/64f5ce0e41dded6739cd67268510fa5a-removebg-preview.png"
+        url = "https://www.kindpng.com/picc/m/243-2434299_one-piece-luffy-disappointed-face-hd-png-download.png"
     )
 }
+
+
+@Composable
+fun rememberStartScreen(
+    loginMode: LoginMode,
+    authTokenState: AuthTokenState
+): AnimeScreen {
+    return remember(loginMode, authTokenState) {
+        when(loginMode) {
+            LoginMode.GUEST -> {
+                AnimeScreen.HOME
+            }
+            LoginMode.USER_LOGIN -> {
+                if(authTokenState is AuthTokenState.Success) AnimeScreen.HOME else AnimeScreen.LOGIN
+            }
+            else -> {
+                AnimeScreen.LOGIN
+            }
+        }
+    }
+}
+
+
+
+
+@Composable
+fun SplashScreen() {
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = "To Insert Logo",
+            )
+        }
+    }
+}
+

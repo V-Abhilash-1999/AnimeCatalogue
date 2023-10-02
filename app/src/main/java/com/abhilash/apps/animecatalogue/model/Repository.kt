@@ -1,6 +1,5 @@
 package com.abhilash.apps.animecatalogue.model
 
-import android.util.Log
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import okhttp3.Cache
@@ -24,10 +23,13 @@ class Repository @Inject constructor() {
         .cache(Cache(File("/cache"), 100 * 1024 * 1024))
         .build()
 
-    init {
-
-    }
     private val gson = Gson()
+
+    private var authToken: String? = null
+
+    fun updateAuthToken(token: String?) {
+        authToken = token
+    }
 
 
     suspend fun fetchAllGenre(): List<GenreData> {

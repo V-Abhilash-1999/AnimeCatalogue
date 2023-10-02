@@ -3,6 +3,8 @@ package com.abhilash.apps.animecatalogue.module
 import android.content.Context
 import com.abhilash.apps.animecatalogue.model.Repository
 import com.abhilash.apps.animecatalogue.model.datastore.DataStoreManager
+import com.abhilash.apps.animecatalogue.model.usecase.GetAccessTokenImpl
+import com.abhilash.apps.animecatalogue.model.usecase.SetAuthToken
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,4 +25,8 @@ object AppModule {
     @Singleton
     @Provides
     fun providesDataStoreManager(@ApplicationContext context: Context): DataStoreManager = DataStoreManager(context)
+
+    @Singleton
+    @Provides
+    fun providesAuthToken(repository: Repository): SetAuthToken = GetAccessTokenImpl(repository)
 }

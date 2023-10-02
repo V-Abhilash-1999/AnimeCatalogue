@@ -1,47 +1,35 @@
 package com.abhilash.apps.animecatalogue.view.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abhilash.apps.animecatalogue.R
-import com.abhilash.apps.animecatalogue.Screen
-import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
 import com.abhilash.apps.animecatalogue.view.theme.StatusBarColorSetter
-import com.abhilash.apps.animecatalogue.view.theme.seed
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.view.util.drawBottomShade
 import com.abhilash.apps.animecatalogue.view.util.drawTopShade
-import com.abhilash.apps.animecatalogue.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(

@@ -1,5 +1,7 @@
 package com.abhilash.apps.animecatalogue.model
 
+import com.abhilash.apps.animecatalogue.RATE_LIMIT_EXCEPTION
+import com.abhilash.apps.animecatalogue.RateLimitException
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import okhttp3.Cache
@@ -20,6 +22,9 @@ class Repository @Inject constructor() {
 
     private val httpClient = OkHttpClient
         .Builder()
+        .connectTimeout(5, TimeUnit.MINUTES)
+        .writeTimeout(5, TimeUnit.MINUTES)
+        .readTimeout(5, TimeUnit.MINUTES)
         .cache(Cache(File("/cache"), 100 * 1024 * 1024))
         .build()
 
@@ -57,8 +62,11 @@ class Repository @Inject constructor() {
         .maxAge(1, TimeUnit.HOURS)
         .build()
 
+    private suspend fun <T> makeAPICall(url: String, classOfT: Class<T>, cacheConfig: LocalCache.CacheConfig = LocalCache.DEFAULT): T? {
+        LocalCache.getCache<T>(url)?.let {
+            return it
+        }
 
-    private suspend fun <T> makeAPICall(url: String, classOfT: Class<T>): T? {
         val request = Request.Builder()
             .url(url)
             .cacheControl(cacheControl)
@@ -66,10 +74,19 @@ class Repository @Inject constructor() {
 
 
         return httpClient.newCall(request).execute().body?.string()?.let { response ->
-            gson.fromJson(response, classOfT)
+            val exception = gson.fromJson(response, RateLimitException::class.java)
+            if(exception.type == RATE_LIMIT_EXCEPTION) {
+                delay(100)
+                return makeAPICall(url, classOfT, cacheConfig)
+            }
+            val responseData = gson.fromJson(response, classOfT)
+            if(cacheConfig != LocalCache.NO_CACHE) {
+                LocalCache.setCache(url, responseData as Any, cacheConfig)
+            }
+            responseData
         } ?: kotlin.run {
             delay(100)
-            makeAPICall(url, classOfT)
+            makeAPICall(url, classOfT, cacheConfig)
         }
     }
 }

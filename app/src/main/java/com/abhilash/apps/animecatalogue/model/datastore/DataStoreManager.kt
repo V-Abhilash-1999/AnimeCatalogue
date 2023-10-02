@@ -23,6 +23,7 @@ class DataStoreManager @Inject constructor(context: Context) {
 
     companion object {
         val loginMethodKey = stringPreferencesKey(DataStoreConstants.LOGIN_MODE.name)
+        val authTokenKey = stringPreferencesKey(DataStoreConstants.AUTH_TOKEN.name)
     }
 
     suspend fun setLoginMethod(
@@ -53,5 +54,25 @@ class DataStoreManager @Inject constructor(context: Context) {
                      LoginMode.values().find { it.name == loginModeString }
                  } ?: LoginMode.UNREGISTERED
              }
+    }
+
+    suspend fun saveAuthToken(token: String) {
+        dataStore.edit { pref ->
+            pref[authTokenKey] = token
+        }
+    }
+
+    fun getAuthToken(): Flow<String?> {
+        return dataStore.data
+            .catch { exception ->
+                if(exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw  exception
+                }
+            }
+            .map { pref ->
+                pref[authTokenKey]
+            }
     }
 }

@@ -5,3 +5,11 @@ enum class AnimeScreen {
     HOME,
     DETAIL
 }
+
+enum class HomeAnimeScreen {
+    ANIME_SERIES,
+    ANIME_MOVIES,
+    WATCHED_ANIME,
+    PROFILE,
+    ABOUT_US
+}

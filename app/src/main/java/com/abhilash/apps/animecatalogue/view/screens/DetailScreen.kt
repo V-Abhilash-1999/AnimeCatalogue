@@ -449,11 +449,3 @@ private fun BackdropImageScaffold(
         }
     }
 }
-
-
-internal class JSInterface {
-    @JavascriptInterface
-    fun doSomething() {
-
-    }
-}

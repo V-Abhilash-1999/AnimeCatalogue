@@ -2,19 +2,15 @@
 
 package com.abhilash.apps.animecatalogue.view.screens
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,8 +23,19 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.twotone.ExitToApp
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -39,15 +46,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
 import com.abhilash.apps.animecatalogue.view.util.AnimeLoader
@@ -64,6 +71,7 @@ import com.abhilash.apps.animecatalogue.view.util.RatingText
 import com.abhilash.apps.animecatalogue.view.util.UIContentType
 import com.abhilash.apps.animecatalogue.view.util.UIState
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
+import com.abhilash.apps.animecatalogue.view.util.shimmerBackground
 import com.abhilash.apps.animecatalogue.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,6 +91,9 @@ fun HomeScreen() {
 
                 }
             )
+        },
+        bottomBar = {
+            CatalogueBottomBar()
         }
     ) {
         val uiState by viewModel.uiState
@@ -94,6 +105,87 @@ fun HomeScreen() {
             uiState = uiState
         )
     }
+}
+
+@Composable
+private fun CatalogueBottomBar() {
+    val navController = rememberNavController()
+    val currentScreen = rememberSaveable {
+        mutableStateOf(HomeAnimeScreen.ANIME_SERIES.name)
+    }
+    LaunchedEffect(currentScreen.value) {
+        val route = navController.currentBackStackEntry?.destination?.route
+        if(route != null && route != currentScreen.value) {
+            navController.navigate(currentScreen.value)
+        }
+    }
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        HomeAnimeScreen.values().forEach {
+            NavigationItem(
+                isCurrentScreen = currentScreen.value == it.name,
+                screen = it
+            ) {
+                currentScreen.value = it.name
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.NavigationItem(
+    isCurrentScreen: Boolean,
+    screen: HomeAnimeScreen,
+    navigateToScreen: () -> Unit
+) {
+    NavigationBarItem(
+        selected = isCurrentScreen,
+        onClick = {
+            navigateToScreen()
+        },
+        label = {
+            val text = when(screen) {
+                HomeAnimeScreen.ANIME_SERIES -> {
+                    "Series"
+                }
+                HomeAnimeScreen.ANIME_MOVIES -> {
+                    "Movies"
+                }
+                HomeAnimeScreen.WATCHED_ANIME -> {
+                    "Watched"
+                }
+                HomeAnimeScreen.PROFILE -> {
+                    "Profile"
+                }
+                HomeAnimeScreen.ABOUT_US -> {
+                    "About Us"
+                }
+            }
+
+            Text(text = text)
+        },
+        icon = {
+            val icon = when(screen) {
+                HomeAnimeScreen.ANIME_SERIES -> {
+                    Icons.Outlined.Face
+                }
+                HomeAnimeScreen.ANIME_MOVIES -> {
+                    Icons.Rounded.Lock
+                }
+                HomeAnimeScreen.WATCHED_ANIME -> {
+                    Icons.Rounded.List
+                }
+                HomeAnimeScreen.PROFILE -> {
+                    Icons.Rounded.AccountCircle
+                }
+                HomeAnimeScreen.ABOUT_US -> {
+                    Icons.Rounded.Settings
+                }
+            }
+            Icon(painter = rememberVectorPainter(image = icon), contentDescription = icon.name)
+        }
+    )
 }
 
 @Composable
@@ -174,30 +266,6 @@ private fun Catalogue() {
         }
 
     }
-}
-
-fun Modifier.shimmerBackground(): Modifier = composed {
-    val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.6f),
-        Color.LightGray.copy(alpha = 0.2f),
-        Color.LightGray.copy(alpha = 0.6f),
-    )
-
-    val transition = rememberInfiniteTransition(label = "Genre Shimmer")
-    val translateAnimation = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800), repeatMode = RepeatMode.Reverse
-        ),
-        label = "Genre Shimmer Translation"
-    )
-    val brush =  Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset.Zero,
-        end = Offset(x = translateAnimation.value, y = translateAnimation.value)
-    )
-    background(brush)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -308,7 +376,9 @@ private fun AnimeTitle(
         mutableStateOf(text)
     }
     Text(
-        modifier = Modifier.fillMaxWidth().then(modifier),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
         text = adjustedText,
         fontWeight = FontWeight.Bold,
         fontSize = 12.sp,

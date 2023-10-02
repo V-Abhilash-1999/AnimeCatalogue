@@ -58,10 +58,6 @@ class Repository @Inject constructor() {
         return makeAPICall("${BASE_URL}anime?genres=$genreID&type=tv&order_by=score&sort=desc", PrimaryData::class.java)
     }
 
-    private val cacheControl = CacheControl.Builder()
-        .maxAge(1, TimeUnit.HOURS)
-        .build()
-
     private suspend fun <T> makeAPICall(url: String, classOfT: Class<T>, cacheConfig: LocalCache.CacheConfig = LocalCache.DEFAULT): T? {
         LocalCache.getCache<T>(url)?.let {
             return it
@@ -69,7 +65,6 @@ class Repository @Inject constructor() {
 
         val request = Request.Builder()
             .url(url)
-            .cacheControl(cacheControl)
             .build()
 
 

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,9 +28,7 @@ import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.twotone.ExitToApp
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -52,7 +49,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.abhilash.apps.animecatalogue.model.AnimeData
 import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
@@ -72,62 +70,99 @@ import com.abhilash.apps.animecatalogue.view.util.UIContentType
 import com.abhilash.apps.animecatalogue.view.util.UIState
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.view.util.shimmerBackground
-import com.abhilash.apps.animecatalogue.viewmodel.HomeViewModel
+import com.abhilash.apps.animecatalogue.viewmodel.HomeAnimeMovies
+import com.abhilash.apps.animecatalogue.viewmodel.HomeAnimeSeries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
-    val viewModel = hiltViewModel<HomeViewModel>()
+    val navController = rememberNavController()
+    val currentScreen = rememberSaveable {
+        mutableStateOf(HomeAnimeScreen.ANIME_SERIES)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(text = "Anime Catalogue")
-                },
-                navigationIcon = {
-
                 }
             )
         },
         bottomBar = {
-            CatalogueBottomBar()
+            CatalogueBottomBar(
+                currentScreen = currentScreen.value,
+                navigateToScreen = {
+                    currentScreen.value = it
+                    navController.navigate(it.name)
+                }
+            )
         }
     ) {
-        val uiState by viewModel.uiState
-
-        CatalogueScreen(
+        NavHost(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
-            uiState = uiState
-        )
+            navController = navController,
+            startDestination = HomeAnimeScreen.ANIME_SERIES.name
+        ) {
+            composable(HomeAnimeScreen.ANIME_SERIES.name) {
+                val viewModel = hiltViewModel<HomeAnimeSeries>()
+                val uiState by viewModel.uiState
+                CatalogueScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    uiState = uiState
+                ) { segment ->
+                    viewModel.setCategoryData(segment)
+                }
+            }
+
+            composable(HomeAnimeScreen.ANIME_MOVIES.name) {
+                val viewModel = hiltViewModel<HomeAnimeMovies>()
+                val uiState by viewModel.uiState
+                CatalogueScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    uiState = uiState
+                ) { segment ->
+                    viewModel.setCategoryData(segment)
+                }
+            }
+
+
+            composable(HomeAnimeScreen.WATCHED_ANIME.name) {
+
+            }
+
+
+            composable(HomeAnimeScreen.PROFILE.name) {
+
+            }
+
+            composable(HomeAnimeScreen.ABOUT_US.name) {
+
+            }
+        }
     }
 }
 
 @Composable
-private fun CatalogueBottomBar() {
-    val navController = rememberNavController()
-    val currentScreen = rememberSaveable {
-        mutableStateOf(HomeAnimeScreen.ANIME_SERIES.name)
-    }
-    LaunchedEffect(currentScreen.value) {
-        val route = navController.currentBackStackEntry?.destination?.route
-        if(route != null && route != currentScreen.value) {
-            navController.navigate(currentScreen.value)
-        }
-    }
+private fun CatalogueBottomBar(
+    currentScreen: HomeAnimeScreen,
+    navigateToScreen: (HomeAnimeScreen) -> Unit
+) {
     NavigationBar(
         modifier = Modifier.fillMaxWidth()
     ) {
         HomeAnimeScreen.values().forEach {
             NavigationItem(
-                isCurrentScreen = currentScreen.value == it.name,
+                isCurrentScreen = currentScreen.name == it.name,
                 screen = it
             ) {
-                currentScreen.value = it.name
+                navigateToScreen(it)
             }
         }
     }
@@ -191,12 +226,13 @@ private fun RowScope.NavigationItem(
 @Composable
 private fun CatalogueScreen(
     modifier: Modifier,
-    uiState: UIState
+    uiState: UIState,
+    setCategoryData: suspend (HomeSegment) -> Unit
 ) {
     Box(modifier = modifier) {
         when (uiState) {
             UIState.SUCCESS -> {
-                Catalogue()
+                Catalogue(setCategoryData)
             }
 
             UIState.FAILURE -> {
@@ -219,7 +255,9 @@ private fun CatalogueScreen(
 }
 
 @Composable
-private fun Catalogue() {
+private fun Catalogue(
+    setCategoryData: suspend (HomeSegment) -> Unit
+) {
     val segmentClass = remember {
         mutableListOf(
             HomeSegment.Popular(),
@@ -230,11 +268,10 @@ private fun Catalogue() {
             HomeSegment.SliceOfLife(),
         )
     }
-    val homeViewModel = viewModel<HomeViewModel>()
     LaunchedEffect(key1 = Unit) {
         launch(Dispatchers.IO) {
             segmentClass.forEach { segment ->
-                homeViewModel.setCategoryData(segment)
+                setCategoryData(segment)
             }
         }
     }
@@ -334,6 +371,7 @@ private fun AnimeSegmentList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.ShimmeringAnimeCard() {
     Column(

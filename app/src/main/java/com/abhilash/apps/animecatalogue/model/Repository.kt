@@ -5,7 +5,6 @@ import com.abhilash.apps.animecatalogue.RateLimitException
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import okhttp3.Cache
-import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -54,8 +53,12 @@ class Repository @Inject constructor() {
         return makeAPICall("${BASE_URL}anime/$id", PrimaryAnimeData::class.java)?.data
     }
 
-    suspend fun fetchAnimeByGenre(genreID: String): PrimaryData? {
+    suspend fun fetchSeriesByGenre(genreID: String): PrimaryData? {
         return makeAPICall("${BASE_URL}anime?genres=$genreID&type=tv&order_by=score&sort=desc", PrimaryData::class.java)
+    }
+
+    suspend fun fetchMoviesByGenre(genreID: String): PrimaryData? {
+        return makeAPICall("${BASE_URL}anime?genres=$genreID&type=movie&order_by=score&sort=desc", PrimaryData::class.java)
     }
 
     private suspend fun <T> makeAPICall(url: String, classOfT: Class<T>, cacheConfig: LocalCache.CacheConfig = LocalCache.DEFAULT): T? {

@@ -12,6 +12,8 @@ import com.abhilash.apps.animecatalogue.model.usecase.SetAuthToken
 import com.abhilash.apps.animecatalogue.view.state.AuthTokenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

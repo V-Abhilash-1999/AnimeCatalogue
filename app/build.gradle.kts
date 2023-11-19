@@ -1,15 +1,23 @@
 import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
+
+val apiKeyPropertiesFile = rootProject.file("api_keys.properties")
+val apiKeyProperties = Properties()
+apiKeyProperties.load(FileInputStream(apiKeyPropertiesFile))
 
 android {
     namespace = "com.abhilash.apps.animecatalogue"
     compileSdk = 33
+    android.buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.abhilash.apps.animecatalogue"
@@ -22,6 +30,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "API_KEY", apiKeyProperties["API_KEY"].toString())
     }
 
     buildTypes {
@@ -92,6 +101,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.44")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    //Firebase
+    implementation("com.google.firebase:firebase-database-ktx:20.2.2")
+
 
     //Test
     testImplementation("junit:junit:4.13.2")

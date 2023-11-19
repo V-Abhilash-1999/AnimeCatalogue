@@ -1,0 +1,49 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Outer frame of the TV -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M10,10 H90 V70 H10z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"/>
+
+    <!-- Screen of the TV -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M15,15 H85 V55 H15z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"/>
+
+    <!-- Antenna Left -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,10 L45,0"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"/>
+
+    <!-- Antenna Right -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,10 L55,0"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"/>
+
+    <!-- Stand of the TV -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M45,70 H55 V75 H45z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"/>
+
+    <!-- Base of the TV Stand -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M40,75 H60 V80 H40z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"/>
+</vector>

@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.abhilash.apps.animecatalogue.model.datastore.LoginMode
@@ -19,6 +20,7 @@ import com.abhilash.apps.animecatalogue.view.screens.AnimeScreen
 import com.abhilash.apps.animecatalogue.view.screens.HomeScreen
 import com.abhilash.apps.animecatalogue.view.screens.LoginScreen
 import com.abhilash.apps.animecatalogue.view.theme.LocalNavigateToLambda
+import com.abhilash.apps.animecatalogue.BuildConfig
 import kotlin.random.Random
 
 @Composable
@@ -95,7 +97,7 @@ fun AnimeCatalogueNavigator(
 
 private fun Context.launchSignInScreen() {
     val codeChallenge = getCodeChallengeString()
-    val clientId = ""
+    val clientId = BuildConfig.API_KEY
     val redirectUri = "animecatalogue://auth"
     val state = "AnimeCatalogue"
 

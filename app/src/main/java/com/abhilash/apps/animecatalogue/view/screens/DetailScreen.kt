@@ -2,7 +2,6 @@ package com.abhilash.apps.animecatalogue.view.screens
 
 import android.content.Intent
 import android.net.Uri
-import android.webkit.JavascriptInterface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,8 +11,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,11 +31,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,12 +48,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,6 +70,7 @@ import com.abhilash.apps.animecatalogue.view.util.RatingText
 import com.abhilash.apps.animecatalogue.view.util.VerticalSpacer
 import com.abhilash.apps.animecatalogue.view.util.capitalizeFirstLetter
 import com.abhilash.apps.animecatalogue.view.util.drawBottomShade
+import com.abhilash.apps.animecatalogue.view.util.drawTopShade
 import com.abhilash.apps.animecatalogue.view.util.takeIfNonZero
 import com.abhilash.apps.animecatalogue.viewmodel.DetailViewModel
 import kotlinx.coroutines.Dispatchers
@@ -393,14 +400,114 @@ private fun TitleRow(
             )
         }
 
+        val alertDialog = remember {
+            mutableStateOf(false)
+        }
+
+        val icon = painterResource(id = R.drawable.ic_tv)
         Icon(
             modifier = Modifier
                 .padding(12.dp)
                 .size(24.dp)
-                .align(Alignment.CenterVertically),
-            painter = painterResource(id = R.drawable.ic_bookmark),
-            contentDescription = null
+                .align(Alignment.CenterVertically)
+                .clickable {
+                    alertDialog.value = true
+                },
+            painter = icon,
+            contentDescription = null,
+            tint = Color.Unspecified
         )
+
+
+        if(alertDialog.value) {
+            WatchStatusDialog(
+                onDismiss = {
+                    alertDialog.value = false
+                },
+                onSelected = {
+
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun WatchStatusDialog(
+    onDismiss: () -> Unit,
+    onSelected: (String) -> Unit
+) {
+    val watchStatus = arrayOf("Not Yet Watched", "Currently Watching", "Watched")
+
+    Dialog(
+        onDismissRequest = {
+            onDismiss()
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .padding(vertical = 16.dp, horizontal = 16.dp)
+        ) {
+            Text(
+                text = "Have you watched this show?",
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            RadioGroup(
+                count = watchStatus.size,
+                radioText = watchStatus
+            ) {
+                onDismiss()
+                onSelected(watchStatus[it])
+            }
+        }
+    }
+}
+
+@Composable
+private fun RadioGroup(
+    count: Int,
+    vararg radioText: String,
+    onSelected: (Int) -> Unit
+) {
+    val selectedIndex = remember {
+        mutableStateOf(-1)
+    }
+    repeat(count) {
+        val radioButton = remember(selectedIndex.value) {
+            mutableStateOf(selectedIndex.value == it)
+        }
+        Row(
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    selectedIndex.value = it
+                    onSelected(selectedIndex.value)
+                }
+        ) {
+            RadioButton(
+                selected = radioButton.value,
+                onClick = {
+                    selectedIndex.value = it
+                    onSelected(selectedIndex.value)
+                }
+            )
+
+            Text(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(Alignment.CenterVertically)
+                    .padding(vertical = 12.dp),
+                text = radioText[it],
+                color = Color.Black,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -447,5 +554,13 @@ private fun BackdropImageScaffold(
                 VerticalSpacer((this@BoxWithConstraints.maxHeight.value * (0.4)).dp - 20.dp)
             }
         }
+
+        Box(
+            modifier = Modifier
+                .height(64.dp)
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .drawTopShade()
+        )
     }
 }

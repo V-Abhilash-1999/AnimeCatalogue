@@ -73,8 +73,10 @@ fun Modifier.drawTopShade(
         drawRect(
             brush = Brush.verticalGradient(
                 colorStops = arrayOf(
-                    0f to color.copy(0.2f),
-                    0.2f to color.copy(0f)
+                    0f to color.copy(0.5f),
+                    0.4f to color.copy(0.2f),
+                    0.5f to color.copy(0f),
+                    1f to color.copy(0f)
                 ),
             ),
             topLeft = Offset.Zero,

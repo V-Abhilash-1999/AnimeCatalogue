@@ -134,7 +134,7 @@ fun HomeScreen() {
 
 
             composable(HomeAnimeScreen.WATCHED_ANIME.name) {
-
+                WatchedAnimeScreen()
             }
 
 
@@ -305,7 +305,6 @@ private fun Catalogue(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AnimeSegmentList(
     segmentData: HomeSegment
@@ -326,7 +325,7 @@ private fun AnimeSegmentList(
             key = { it.id }
         ) { animeData ->
             val navigateTo = LocalNavigateToLambda.current
-            Column(
+            AnimeCard(
                 modifier = Modifier
                     .clickable(
                         interactionSource = remember {
@@ -341,94 +340,11 @@ private fun AnimeSegmentList(
                     }
                     .padding(8.dp)
                     .animateItemPlacement()
-                    .width(IntrinsicSize.Min)
-            ) {
-                AnimePoster(
-                    modifier = Modifier
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(8.dp),
-                            clip = false
-                        )
-                        .height(200.dp)
-                        .aspectRatio(0.7f)
-                        .clip(RoundedCornerShape(8.dp)),
-                    url = animeData.images.webp.imageUrl,
-                    contentScale = ContentScale.FillBounds
-                )
-
-                VerticalSpacer(16.dp)
-
-                AnimeTitle(text = animeData.englishTitle ?: animeData.title)
-
-                VerticalSpacer()
-
-                RatingText(
-                    rating = String.format("%.2f", animeData.score)
-                )
-            }
+                    .width(IntrinsicSize.Min),
+                animeData = animeData
+            )
         }
     }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun LazyItemScope.ShimmeringAnimeCard() {
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .animateItemPlacement()
-            .width(IntrinsicSize.Min)
-    ) {
-        Box(
-            modifier = Modifier
-                .aspectRatio(0.7f)
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .shimmerBackground(),
-        )
-
-        VerticalSpacer(16.dp)
-
-        AnimeTitle(
-            modifier = Modifier
-                .shimmerBackground(),
-            text = ""
-        )
-
-        VerticalSpacer()
-
-        RatingText(
-            modifier = Modifier.shimmerBackground(),
-            rating = "  "
-        )
-    }
-}
-
-@Composable
-private fun AnimeTitle(
-    modifier: Modifier = Modifier,
-    text: String
-) {
-    var adjustedText by remember(text) {
-        mutableStateOf(text)
-    }
-    Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(modifier),
-        text = adjustedText,
-        fontWeight = FontWeight.Bold,
-        fontSize = 12.sp,
-        lineHeight = 14.sp,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        onTextLayout = {
-            if(it.lineCount == 1) {
-                adjustedText += "\n"
-            }
-        }
-    )
 }
 
 @Stable
